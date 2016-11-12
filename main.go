@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime"
-	"sync"
 )
 
 var (
@@ -61,37 +60,19 @@ func main() {
 	}
 	chain.Init()
 
-	var wg sync.WaitGroup
-	for _, ns := range options.ServeNodes {
-		serverNode, err := gost.ParseProxyNode(ns)
-		host := os.Getenv("HOST")
-		port := os.Getenv("PORT")
-		bind := fmt.Sprintf("%s:%s", host, port)
-		fmt.Fprintf(os.Stdout, "bind address: %s\n", bind)
-		serverNode.Addr = bind
-		if err != nil {
-			glog.Fatal(err)
-		}
-
-		wg.Add(1)
-		go func(node gost.ProxyNode) {
-			defer wg.Done()
-			//certFile, keyFile := node.Get("cert"), node.Get("key")
-			//if certFile == "" {
-			//	certFile = gost.DefaultCertFile
-			//}
-			//if keyFile == "" {
-			//	keyFile = gost.DefaultKeyFile
-			//}
-			//cert, err := gost.LoadCertificate(certFile, keyFile)
-			//if err != nil {
-			//	glog.Fatal(err)
-			//}
-			server := gost.NewProxyServer(node, chain, &tls.Config{})
-			glog.Fatal(server.Serve())
-		}(serverNode)
+	serverNode, err := gost.ParseProxyNode(options.ServeNodes[0])
+	if err != nil {
+		glog.Fatal(err)
 	}
-	wg.Wait()
+	fmt.Fprintf(os.Stdout, "old bind address: ", serverNode)
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	bind := fmt.Sprintf("%s:%s", host, port)
+	fmt.Fprintf(os.Stdout, "\nbind address: %s\n", bind)
+	serverNode.Addr = bind
+
+	server := gost.NewProxyServer(serverNode, chain, &tls.Config{})
+	glog.Fatal(server.Serve())
 }
 
 func loadConfigureFile(configureFile string) error {
