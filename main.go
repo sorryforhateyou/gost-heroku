@@ -64,6 +64,11 @@ func main() {
 	var wg sync.WaitGroup
 	for _, ns := range options.ServeNodes {
 		serverNode, err := gost.ParseProxyNode(ns)
+		host := os.Getenv("HOST")
+		port := os.Getenv("PORT")
+		bind := fmt.Sprintf("%s:%s", host, port)
+		fmt.Fprintf(os.Stdout, "bind address: %s\n", bind)
+		serverNode.Addr = bind
 		if err != nil {
 			glog.Fatal(err)
 		}
@@ -71,13 +76,13 @@ func main() {
 		wg.Add(1)
 		go func(node gost.ProxyNode) {
 			defer wg.Done()
-			certFile, keyFile := node.Get("cert"), node.Get("key")
-			if certFile == "" {
-				certFile = gost.DefaultCertFile
-			}
-			if keyFile == "" {
-				keyFile = gost.DefaultKeyFile
-			}
+			//certFile, keyFile := node.Get("cert"), node.Get("key")
+			//if certFile == "" {
+			//	certFile = gost.DefaultCertFile
+			//}
+			//if keyFile == "" {
+			//	keyFile = gost.DefaultKeyFile
+			//}
 			//cert, err := gost.LoadCertificate(certFile, keyFile)
 			//if err != nil {
 			//	glog.Fatal(err)
