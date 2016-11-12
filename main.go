@@ -31,8 +31,9 @@ func init() {
 	flag.Var(&options.ServeNodes, "L", "listen address, can listen on multiple ports")
 	flag.BoolVar(&printVersion, "V", false, "print version")
 	flag.Parse()
-
+	fmt.Fprintf(os.Stderr, "%s\n", &options.ChainNodes)
 	if err := loadConfigureFile(configureFile); err != nil {
+		fmt.Fprintf(os.Stdout, "no configure file\n")
 		glog.Fatal(err)
 	}
 
@@ -42,6 +43,7 @@ func init() {
 
 	if flag.NFlag() == 0 {
 		flag.PrintDefaults()
+		fmt.Fprintf(os.Stdout, "no parameters\n")
 		return
 	}
 
@@ -49,6 +51,7 @@ func init() {
 		fmt.Fprintf(os.Stderr, "GOST %s (%s)\n", gost.Version, runtime.Version())
 		return
 	}
+	fmt.Fprintf(os.Stdout, "init finish\n")
 }
 
 func main() {
@@ -75,11 +78,11 @@ func main() {
 			if keyFile == "" {
 				keyFile = gost.DefaultKeyFile
 			}
-			cert, err := gost.LoadCertificate(certFile, keyFile)
-			if err != nil {
-				glog.Fatal(err)
-			}
-			server := gost.NewProxyServer(node, chain, &tls.Config{Certificates: []tls.Certificate{cert}})
+			//cert, err := gost.LoadCertificate(certFile, keyFile)
+			//if err != nil {
+			//	glog.Fatal(err)
+			//}
+			server := gost.NewProxyServer(node, chain, &tls.Config{})
 			glog.Fatal(server.Serve())
 		}(serverNode)
 	}
